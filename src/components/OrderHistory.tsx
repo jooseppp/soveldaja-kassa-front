@@ -24,8 +24,8 @@ export const OrderHistory: React.FC<OrderHistoryProps> = ({
 
     if (loading) {
         return (
-            <div className="bg-white rounded-2xl shadow-lg p-8">
-                <div className="flex items-center space-x-4 mb-8">
+            <div className="bg-white rounded-2xl shadow-lg p-4">
+                <div className="flex items-center space-x-4 mb-6">
                     <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
                         <Clock className="h-7 w-7 text-blue-600"/>
                     </div>
@@ -81,8 +81,8 @@ export const OrderHistory: React.FC<OrderHistoryProps> = ({
 
     return (
         <>
-            <div className="bg-white rounded-2xl shadow-lg p-8">
-                <div className="flex items-center space-x-4 mb-8">
+            <div className="bg-white rounded-2xl shadow-lg p-4">
+                <div className="flex items-center space-x-4 mb-6">
                     <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
                         <Clock className="h-7 w-7 text-blue-600"/>
                     </div>
