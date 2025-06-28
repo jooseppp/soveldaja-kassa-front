@@ -23,6 +23,7 @@ export interface OrderDTO {
     items: OrderItemDTO[];
     total: number;
     createdAt: string;
+    registerId: string;
 }
 
 export interface CartItem {

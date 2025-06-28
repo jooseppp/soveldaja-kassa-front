@@ -5,8 +5,8 @@ import {
   getAllRegisters,
   getDrinksByRegister,
   createOrder,
-  getAllOrders,
-  deleteOrder
+  deleteOrder,
+  getLastOrderByRegister
 } from '../services/api';
 import { LoginScreen } from './LoginScreen';
 import { Header } from './Header';
@@ -36,13 +36,22 @@ export const CashRegister: React.FC = () => {
     getTotalItems,
   } = useCart();
 
-  // Load registers on mount
+  // Load registers on mount and check for saved register
   useEffect(() => {
     const loadRegisters = async () => {
       setLoading(prev => ({ ...prev, registers: true }));
       try {
         const data = await getAllRegisters();
         setRegisters(data);
+
+        // Check if there's a saved register ID in localStorage
+        const savedRegisterId = localStorage.getItem('selectedRegisterId');
+        if (savedRegisterId) {
+          const savedRegister = data.find(register => register.id === parseInt(savedRegisterId));
+          if (savedRegister) {
+            setSelectedRegister(savedRegister);
+          }
+        }
       } catch (error) {
         console.error('Failed to load registers:', error);
       } finally {
@@ -77,28 +86,41 @@ export const CashRegister: React.FC = () => {
   }, [selectedRegister]);
 
   // Load orders when register is selected
-    useEffect(() => {
-        if (!selectedRegister) {
-            const loadOrders = async () => {
-                try {
-                    const data = await getAllOrders();
-                    if (Array.isArray(data)) {
-                        setOrders(
-                            data.sort((a, b) =>
-                                new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-                            )
-                        );
-                    } else {
-                        throw new Error('Data is not an array');
-                    }
-                } catch (error) {
-                    // setError(error); // if you have error state
-                    console.error('Failed to load orders:', error);
-                }
-            };
-            loadOrders();
+  useEffect(() => {
+    if (!selectedRegister) {
+      setOrders([]);
+      return;
+    }
+
+    const loadOrders = async () => {
+      setLoading(prev => ({ ...prev, orders: true }));
+      try {
+        // Use the new endpoint to get the last order for the selected register
+        const lastOrder = await getLastOrderByRegister(selectedRegister.id);
+        console.log('Last order in CashRegister:', lastOrder);
+
+        // If we got a valid response, set the orders
+        if (lastOrder) {
+          // Check if lastOrder is an array
+          if (Array.isArray(lastOrder)) {
+            setOrders(lastOrder);
+          } else {
+            // If it's a single order, put it in an array
+            setOrders([lastOrder]);
+          }
+        } else {
+          setOrders([]);
         }
-    }, [selectedRegister]);
+      } catch (error) {
+        console.error('Failed to load last order:', error);
+        setOrders([]);
+      } finally {
+        setLoading(prev => ({ ...prev, orders: false }));
+      }
+    };
+
+    loadOrders();
+  }, [selectedRegister]);
 
 
   const handleCheckout = async () => {
@@ -118,9 +140,20 @@ export const CashRegister: React.FC = () => {
       await createOrder(orderData);
       clearCart();
 
-      // Reload orders
-      const updatedOrders = await getAllOrders();
-      setOrders(updatedOrders);
+      // Reload the last order for the selected register
+      if (selectedRegister) {
+        const lastOrder = await getLastOrderByRegister(selectedRegister.id);
+        console.log('Last order after checkout:', lastOrder);
+        if (lastOrder) {
+          // Check if lastOrder is an array
+          if (Array.isArray(lastOrder)) {
+            setOrders(lastOrder);
+          } else {
+            // If it's a single order, put it in an array
+            setOrders([lastOrder]);
+          }
+        }
+      }
 
     } catch (error) {
       console.error('Failed to create order:', error);
@@ -151,6 +184,8 @@ export const CashRegister: React.FC = () => {
   };
 
   const handleLogout = () => {
+    // Clear the register ID from localStorage
+    localStorage.removeItem('selectedRegisterId');
     setSelectedRegister(null);
     clearCart();
     setDrinks([]);

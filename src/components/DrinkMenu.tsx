@@ -39,7 +39,7 @@ export const DrinkMenu: React.FC<DrinkMenuProps> = ({drinks, onAddToCart, loadin
 
   return (
       <div className="bg-white rounded-2xl shadow-lg p-4">
-        <div className="flex items-center space-x-4 mb-6">
+        {/*<div className="flex items-center space-x-4 mb-6">
           <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
             <Coffee className="h-7 w-7 text-blue-600"/>
           </div>
@@ -47,7 +47,7 @@ export const DrinkMenu: React.FC<DrinkMenuProps> = ({drinks, onAddToCart, loadin
           <span className="bg-blue-100 text-blue-800 text-base font-semibold px-4 py-2 rounded-full">
           {drinks.length} items
         </span>
-        </div>
+        </div>*/}
 
         {drinks.length === 0 ? (
             <div className="text-center py-16">
@@ -64,7 +64,7 @@ export const DrinkMenu: React.FC<DrinkMenuProps> = ({drinks, onAddToCart, loadin
                       </div>
                       <h3 className="text-xl font-bold text-gray-800">Joogid</h3>
                       <span className="bg-blue-100 text-blue-800 text-sm font-semibold px-3 py-1 rounded-full">
-                  {regularDrinks.length} items
+                  {regularDrinks.length} toodet
                 </span>
                     </div>
                     <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

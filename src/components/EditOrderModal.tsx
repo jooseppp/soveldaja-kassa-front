@@ -15,7 +15,7 @@ export const EditOrderModal: React.FC<EditOrderModalProps> = ({
                                                                 onDelete,
                                                                 onClose,
                                                               }) => {
-  const [editedItems, setEditedItems] = useState<OrderItemDTO[]>([...order.items]);
+  const [editedItems, setEditedItems] = useState<OrderItemDTO[]>([...(order.items || [])]);
 
   const updateQuantity = (index: number, quantity: number) => {
     if (quantity <= 0) {
@@ -57,7 +57,7 @@ export const EditOrderModal: React.FC<EditOrderModalProps> = ({
           <div className="flex items-center justify-between p-8 border-b border-gray-200">
             <div>
               <h2 className="text-2xl font-bold text-gray-900">Edit Order</h2>
-              <p className="text-gray-600 mt-1">#{order.id?.slice(-8)}</p>
+              <p className="text-gray-600 mt-1">{order.id ? `#${order.id.slice(-8)}` : 'New Order'}</p>
             </div>
             <button
                 onClick={onClose}
@@ -126,7 +126,8 @@ export const EditOrderModal: React.FC<EditOrderModalProps> = ({
             <div className="flex space-x-4">
               <button
                   onClick={handleDelete}
-                  className="flex-1 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2"
+                  disabled={!order.id}
+                  className={`flex-1 ${order.id ? 'bg-red-600 hover:bg-red-700 active:bg-red-800' : 'bg-gray-400 cursor-not-allowed'} text-white font-bold py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2`}
               >
                 <Trash2 className="h-5 w-5"/>
                 <span>Kustuta tellimus</span>

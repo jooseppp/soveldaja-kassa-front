@@ -17,8 +17,14 @@ export const OrderHistory: React.FC<OrderHistoryProps> = ({
                                                               loading = false
                                                           }) => {
     const [editingOrder, setEditingOrder] = useState<OrderDTO | null>(null);
-    const onlyTime = (createdAt: string) => {
-        return new Date(createdAt).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', second: '2-digit'});
+    const onlyTime = (createdAt?: string) => {
+        if (!createdAt) return 'N/A';
+        try {
+            return new Date(createdAt).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', second: '2-digit'});
+        } catch (error) {
+            console.error('Error formatting time:', error);
+            return 'N/A';
+        }
     };
 
 
@@ -29,7 +35,7 @@ export const OrderHistory: React.FC<OrderHistoryProps> = ({
                     <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
                         <Clock className="h-7 w-7 text-blue-600"/>
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-900">Viimased tellimused</h2>
+                    <h2 className="text-2xl font-bold text-gray-900">Hiljutised tellimused</h2>
                 </div>
                 <div className="space-y-6">
                     {[...Array(3)].map((_, i) => (
@@ -71,6 +77,7 @@ export const OrderHistory: React.FC<OrderHistoryProps> = ({
 
     const handleSaveOrder = (updatedOrder: OrderDTO) => {
         onUpdateOrder(updatedOrder);
+        console.log(updatedOrder);
         setEditingOrder(null);
     };
 
@@ -86,7 +93,7 @@ export const OrderHistory: React.FC<OrderHistoryProps> = ({
                     <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
                         <Clock className="h-7 w-7 text-blue-600"/>
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-900">Recent Orders</h2>
+                    <h2 className="text-2xl font-bold text-gray-900">Hiljutised tellimused</h2>
                     <span className="bg-blue-100 text-blue-800 text-base font-semibold px-4 py-2 rounded-full">
             {orders.length}
           </span>
@@ -95,21 +102,22 @@ export const OrderHistory: React.FC<OrderHistoryProps> = ({
                 {orders.length === 0 ? (
                     <div className="text-center py-12">
                         <Clock className="h-20 w-20 text-gray-300 mx-auto mb-6"/>
-                        <p className="text-gray-500 text-lg">No orders yet</p>
-                        <p className="text-gray-400 mt-3">Orders will appear here once created</p>
+                        <p className="text-gray-500 text-lg">Hiljutisi tellimusi pole</p>
                     </div>
                 ) : (
                     <div className="space-y-6 max-h-96 overflow-y-auto">
-                        {orders.map((order) => (
-                            <div key={order.id}
+                        {orders.map((order, index) => (
+                            <div key={order.id || `order-${index}`}
                                  className="border-2 border-gray-100 rounded-2xl p-6 hover:bg-gray-50 hover:border-gray-200 transition-all duration-200 group">
                                 <div className="flex items-center justify-between mb-4">
                                     <div className="flex items-center space-x-3">
-                                        <span className="font-bold text-gray-900 text-lg">#{order.id?.slice(-8)}</span>
+                                        <span className="font-bold text-gray-900 text-lg">
+                                            {order.id ? `#${order.id.slice(-8)}` : `Order ${index + 1}`}
+                                        </span>
                                         <span
                                             className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold border ${getStatusColor('COMPLETED')}`}>
                       {getStatusIcon('COMPLETED')}
-                                            <span className="ml-2">Completed</span>
+                                            <span className="ml-2">Esitatud</span>
                     </span>
                                     </div>
                                     <div className="flex items-center space-x-3">
@@ -127,12 +135,12 @@ export const OrderHistory: React.FC<OrderHistoryProps> = ({
 
                                 <div className="flex items-center justify-between">
                   <span className="text-gray-600 text-base">
-                    {order.items.length} item{order.items.length !== 1 ? 's' : ''}
+                    {order.items?.length || 0} item{(order.items?.length || 0) !== 1 ? 's' : ''}
                   </span>
                                     <div className="flex items-center space-x-2">
                                         <Euro className="h-5 w-5 text-green-600"/>
                                         <span className="font-bold text-green-600 text-xl">
-                      {order.total.toFixed(2)}
+                      {(order.total || 0).toFixed(2)}
                     </span>
                                     </div>
                                 </div>

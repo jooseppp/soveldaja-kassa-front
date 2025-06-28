@@ -18,7 +18,7 @@ export const DrinkCard: React.FC<DrinkCardProps> = ({drink, onAddToCart}) => {
     return (
         <div
             onClick={() => onAddToCart(drink)}
-            className={`${cardBg} rounded-xl shadow-lg overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 active:scale-95 cursor-pointer p-4`}>
+            className={`${cardBg} rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 active:scale-95 cursor-pointer p-4`}>
             <h3 className="text-lg font-bold text-gray-900 text-center mb-2 leading-tight">
                 {drink.name}
             </h3>

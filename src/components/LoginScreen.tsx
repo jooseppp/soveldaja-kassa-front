@@ -18,6 +18,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     const handleLogin = () => {
         const register = registers.find(r => r.id === parseInt(selectedRegisterId));
         if (register) {
+            // Save the register ID to localStorage
+            localStorage.setItem('selectedRegisterId', register.id.toString());
             onSelectRegister(register);
         }
     };
