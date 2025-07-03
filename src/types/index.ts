@@ -1,34 +1,36 @@
 export interface Register {
-    id: number;
-    name: string;
-    createdAt: string;
-    updatedAt: string;
+  id: number;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface DrinkDTO {
-    id: number;
-    name: string;
-    price: number;
-    shot: boolean;
-    registerId: number;
+  id: number;
+  name: string;
+  price: number;
+  shot: boolean;
+  registerId: number;
 }
 
 export interface OrderItemDTO {
-    drinkId: string;
-    quantity: number;
+  drinkId: string;
+  drinkName: string;
+  quantity: number;
+  price: number;
 }
 
 export interface OrderDTO {
-    id?: string;
-    items: OrderItemDTO[];
-    total: number;
-    createdAt: string;
-    registerId: string;
+  id?: string;
+  items: OrderItemDTO[];
+  total: number;
+  createdAt: string;
+  registerId: string;
 }
 
 export interface CartItem {
-    drink: DrinkDTO;
-    quantity: number;
+  drink: DrinkDTO;
+  quantity: number;
 }
 
 export type OrderStatus = 'PENDING' | 'COMPLETED' | 'CANCELLED';

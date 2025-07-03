@@ -1,6 +1,7 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Minus, Plus, Save, Trash2, X} from 'lucide-react';
-import {OrderDTO, OrderItemDTO} from '../types';
+import {DrinkDTO, OrderDTO, OrderItemDTO} from '../types';
+import {getDrinkById} from '../services/api';
 
 interface EditOrderModalProps {
   order: OrderDTO;
@@ -16,6 +17,49 @@ export const EditOrderModal: React.FC<EditOrderModalProps> = ({
                                                                 onClose,
                                                               }) => {
   const [editedItems, setEditedItems] = useState<OrderItemDTO[]>([...(order.items || [])]);
+  const [loading, setLoading] = useState(false);
+  const isZeroEuroOrder = order.total === 0;
+
+  // Fetch current prices for each drink in the order
+  useEffect(() => {
+    const fetchDrinkPrices = async () => {
+      setLoading(true);
+      try {
+        const updatedItems = await Promise.all(
+            editedItems.map(async (item) => {
+              try {
+                // Convert drinkId to number (API expects a number)
+                const drinkId = parseInt(item.drinkId);
+                if (isNaN(drinkId)) {
+                  console.error(`Invalid drinkId: ${item.drinkId}`);
+                  return item;
+                }
+
+                // Fetch the current drink data
+                const drinkData: DrinkDTO = await getDrinkById(drinkId);
+
+                // Update the item with the current price
+                return {
+                  ...item,
+                  price: drinkData.price
+                };
+              } catch (error) {
+                console.error(`Failed to fetch price for drink ${item.drinkId}:`, error);
+                return item;
+              }
+            })
+        );
+
+        setEditedItems(updatedItems);
+      } catch (error) {
+        console.error('Error fetching drink prices:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDrinkPrices();
+  }, [order.items]);
 
   const updateQuantity = (index: number, quantity: number) => {
     if (quantity <= 0) {
@@ -31,9 +75,11 @@ export const EditOrderModal: React.FC<EditOrderModalProps> = ({
   };
 
   const calculateTotal = () => {
-    // Note: In a real app, you'd need drink prices to calculate this properly
-    // For now, we'll use a simplified calculation
-    return editedItems.reduce((total, item) => total + (item.quantity * 5), 0); // Assuming $5 per item
+    // If it's a zero euro order, return 0 regardless of items
+    if (isZeroEuroOrder) {
+      return 0;
+    }
+    return editedItems.reduce((total, item) => total + (item.quantity * (item.price || 0)), 0);
   };
 
   const handleSave = () => {
@@ -44,6 +90,7 @@ export const EditOrderModal: React.FC<EditOrderModalProps> = ({
     };
     onSave(updatedOrder);
   };
+
 
   const handleDelete = () => {
     if (order.id && window.confirm('Are you sure you want to delete this order?')) {
@@ -56,7 +103,7 @@ export const EditOrderModal: React.FC<EditOrderModalProps> = ({
         <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
           <div className="flex items-center justify-between p-8 border-b border-gray-200">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Edit Order</h2>
+              <h2 className="text-2xl font-bold text-gray-900">Muuda tellimust</h2>
               <p className="text-gray-600 mt-1">{order.id ? `#${order.id.slice(-8)}` : 'New Order'}</p>
             </div>
             <button
@@ -68,9 +115,13 @@ export const EditOrderModal: React.FC<EditOrderModalProps> = ({
           </div>
 
           <div className="p-8 max-h-96 overflow-y-auto">
-            {editedItems.length === 0 ? (
+            {loading ? (
                 <div className="text-center py-8">
-                  <p className="text-gray-500 text-lg">No items in this order</p>
+                  <p className="text-gray-500 text-lg">Laadin hindasid...</p>
+                </div>
+            ) : editedItems.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500 text-lg">Siin pole ühtegi jooki</p>
                 </div>
             ) : (
                 <div className="space-y-4">
@@ -78,9 +129,8 @@ export const EditOrderModal: React.FC<EditOrderModalProps> = ({
                       <div key={index} className="border-2 border-gray-100 rounded-2xl p-6">
                         <div className="flex items-center justify-between mb-4">
                           <div>
-                            <h3 className="font-semibold text-gray-900 text-lg">Drink
-                              #{item.drinkId}</h3>
-                            <p className="text-gray-500">$5.00 each</p>
+                            <h3 className="font-semibold text-gray-900 text-lg">{item.drinkName}</h3>
+                            <p className="text-gray-500">€{(item.price || 0).toFixed(2)} each</p>
                           </div>
                         </div>
 
@@ -106,7 +156,7 @@ export const EditOrderModal: React.FC<EditOrderModalProps> = ({
                           </div>
 
                           <p className="font-bold text-blue-600 text-lg">
-                            ${(item.quantity * 5).toFixed(2)}
+                            €{(item.quantity * (item.price || 0)).toFixed(2)}
                           </p>
                         </div>
                       </div>
@@ -117,10 +167,12 @@ export const EditOrderModal: React.FC<EditOrderModalProps> = ({
 
           <div className="border-t border-gray-200 p-8">
             <div className="flex items-center justify-between mb-6">
-              <span className="text-xl font-bold text-gray-900">Total</span>
-              <span className="text-2xl font-bold text-blue-600">
-              ${calculateTotal().toFixed(2)}
-            </span>
+              <span className="text-xl font-bold text-gray-900">{isZeroEuroOrder ? "0€ Tellimus" : "Kokku"}</span>
+              <div className="flex items-center">
+                <span className={`text-2xl font-bold ${isZeroEuroOrder ? 'text-green-600' : 'text-blue-600'}`}>
+                  €{calculateTotal().toFixed(2)}
+                </span>
+              </div>
             </div>
 
             <div className="flex space-x-4">

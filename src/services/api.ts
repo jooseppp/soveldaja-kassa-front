@@ -1,3 +1,5 @@
+import { OrderDTO } from '../types';
+
 const API_BASE_URL = 'http://localhost:8080/api';
 
 // Register API
@@ -102,5 +104,17 @@ export const deleteOrder = async (id: string) => {
     method: 'DELETE',
   });
   if (!response.ok) throw new Error('Failed to delete order');
+  return response.json();
+};
+
+export const updateOrder = async (id: string, order: OrderDTO) => {
+  const response = await fetch(`${API_BASE_URL}/orders/edit/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(order),
+  });
+  if (!response.ok) throw new Error('Failed to update order');
   return response.json();
 };

@@ -8,6 +8,7 @@ interface CartProps {
     onRemoveItem: (drinkId: number) => void;
     onClearCart: () => void;
     onCheckout: () => void;
+    onZeroCheckout: () => void;
     totalPrice: number;
     totalItems: number;
     loading?: boolean;
@@ -19,6 +20,7 @@ export const Cart: React.FC<CartProps> = ({
                                               onRemoveItem,
                                               onClearCart,
                                               onCheckout,
+                                              onZeroCheckout,
                                               totalPrice,
                                               totalItems,
                                               loading = false,
@@ -70,7 +72,7 @@ export const Cart: React.FC<CartProps> = ({
                         <div className="flex items-start justify-between mb-2">
                             <div className="flex-1">
                                 <h3 className="font-semibold text-gray-900 text-base">{item.drink.name}</h3>
-                                <p className="text-gray-500 text-sm">€{item.drink.price.toFixed(2)} tk</p>
+                                <p className="text-gray-500 text-sm">€{(item.drink.price).toFixed(2)} tk</p>
                             </div>
                             <button
                                 onClick={() => onRemoveItem(item.drink.id)}
@@ -113,29 +115,39 @@ export const Cart: React.FC<CartProps> = ({
                 <div className="flex items-center justify-between mb-1">
                     <span className="text-lg font-bold text-gray-900">Kokku</span>
                     <span className="text-xl font-bold text-blue-600">
-            €{totalPrice.toFixed(2)}
+            €{(totalPrice).toFixed(2)}
           </span>
                 </div>
                 <p className="text-gray-500 text-sm">{totalItems} jook</p>
             </div>
 
-            <button
-                onClick={onCheckout}
-                disabled={loading}
-                className="w-full bg-green-600 hover:bg-green-700 active:bg-green-800 disabled:bg-gray-400 text-white font-bold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 text-base shadow-md hover:shadow-lg active:scale-95"
-            >
-                {loading ? (
-                    <>
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                        <span>Töötlen...</span>
-                    </>
-                ) : (
-                    <>
-                        <ShoppingCart className="h-5 w-5"/>
-                        <span>Osta</span>
-                    </>
-                )}
-            </button>
+            <div className="grid grid-cols-2 gap-2">
+                <button
+                    onClick={onCheckout}
+                    disabled={loading}
+                    className="bg-green-600 hover:bg-green-700 active:bg-green-800 disabled:bg-gray-400 text-white font-bold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 text-base shadow-md hover:shadow-lg active:scale-95"
+                >
+                    {loading ? (
+                        <>
+                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                            <span>Töötlen...</span>
+                        </>
+                    ) : (
+                        <>
+                            <ShoppingCart className="h-5 w-5"/>
+                            <span>Osta</span>
+                        </>
+                    )}
+                </button>
+                <button
+                    onClick={onZeroCheckout}
+                    disabled={loading}
+                    className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:bg-gray-400 text-white font-bold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 text-base shadow-md hover:shadow-lg active:scale-95"
+                >
+                    <ShoppingCart className="h-5 w-5"/>
+                    <span>0€ Osta</span>
+                </button>
+            </div>
         </div>
     );
 };

@@ -6,7 +6,8 @@ import {
   getDrinksByRegister,
   createOrder,
   deleteOrder,
-  getLastOrderByRegister
+  getLastOrderByRegister,
+  updateOrder
 } from '../services/api';
 import { LoginScreen } from './LoginScreen';
 import { Header } from './Header';
@@ -163,14 +164,63 @@ export const CashRegister: React.FC = () => {
     }
   };
 
+  const handleZeroCheckout = async () => {
+    if (cartItems.length === 0) return;
+
+    setLoading(prev => ({ ...prev, checkout: true }));
+
+    try {
+      const orderData = {
+        items: cartItems.map(item => ({
+          drinkId: item.drink.id.toString(),
+          quantity: item.quantity,
+        })),
+        total: 0, // Set total to 0 for zero-euro orders
+      };
+
+      await createOrder(orderData);
+      clearCart();
+
+      // Reload the last order for the selected register
+      if (selectedRegister) {
+        const lastOrder = await getLastOrderByRegister(selectedRegister.id);
+        console.log('Last order after zero checkout:', lastOrder);
+        if (lastOrder) {
+          // Check if lastOrder is an array
+          if (Array.isArray(lastOrder)) {
+            setOrders(lastOrder);
+          } else {
+            // If it's a single order, put it in an array
+            setOrders([lastOrder]);
+          }
+        }
+      }
+
+    } catch (error) {
+      console.error('Failed to create zero-euro order:', error);
+      alert('Failed to process zero-euro order. Please try again.');
+    } finally {
+      setLoading(prev => ({ ...prev, checkout: false }));
+    }
+  };
+
   const handleUpdateOrder = async (updatedOrder: OrderDTO) => {
-    // In a real app, you'd call an API to update the order
-    // For now, we'll just update the local state
-    setOrders(prev =>
-      prev.map(order =>
-        order.id === updatedOrder.id ? updatedOrder : order
-      )
-    );
+    try {
+      if (updatedOrder.id) {
+        // Call the API to update the order in the database
+        await updateOrder(updatedOrder.id, updatedOrder);
+
+        // Update the local state
+        setOrders(prev =>
+          prev.map(order =>
+            order.id === updatedOrder.id ? updatedOrder : order
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Failed to update order:', error);
+      alert('Failed to update order. Please try again.');
+    }
   };
 
   const handleDeleteOrder = async (orderId: string) => {
@@ -227,6 +277,7 @@ export const CashRegister: React.FC = () => {
               onRemoveItem={removeFromCart}
               onClearCart={clearCart}
               onCheckout={handleCheckout}
+              onZeroCheckout={handleZeroCheckout}
               totalPrice={getTotalPrice()}
               totalItems={getTotalItems()}
               loading={loading.checkout}
