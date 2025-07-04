@@ -110,7 +110,7 @@ export const deleteOrder = async (id: string) => {
     method: 'DELETE',
   });
   if (!response.ok) throw new Error('Failed to delete order');
-  return response.json();
+  return;
 };
 
 export const updateOrder = async (id: string, order: OrderDTO) => {
