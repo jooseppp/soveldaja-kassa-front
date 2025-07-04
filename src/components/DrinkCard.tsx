@@ -11,14 +11,10 @@ export const DrinkCard: React.FC<DrinkCardProps> = ({drink, onAddToCart}) => {
   let cardBg = "bg-white";
 
   // Special styling for specific drinks
-  if (drink.name === "panditops" || drink.name === "pandipokaal") {
+  if (drink.name === "Panditops" || drink.name === "Pandipokaal") {
     cardBg = "bg-purple-200"; // Purple background for special drinks
   } else if (drink.shot) {
     cardBg = "bg-orange-100"; // Orange background for shots
-  }
-
-  if (drink.shot) {
-    console.log("shots")
   }
 
   return (

@@ -15,11 +15,29 @@ import { DrinkMenu } from './DrinkMenu';
 import { Cart } from './Cart';
 import { OrderHistory } from './OrderHistory';
 
+// Error message component
+const ErrorMessage: React.FC<{ message: string; onClose: () => void }> = ({ message, onClose }) => {
+  if (!message) return null;
+
+  return (
+    <div className="fixed bottom-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-md flex items-center justify-between" role="alert">
+      <div>
+        <span className="font-bold">Error: </span>
+        <span className="block sm:inline">{message}</span>
+      </div>
+      <button onClick={onClose} className="ml-4 text-red-700 hover:text-red-900">
+        <span className="text-2xl">&times;</span>
+      </button>
+    </div>
+  );
+};
+
 export const CashRegister: React.FC = () => {
   const [registers, setRegisters] = useState<Register[]>([]);
   const [selectedRegister, setSelectedRegister] = useState<Register | null>(null);
   const [drinks, setDrinks] = useState<DrinkDTO[]>([]);
   const [orders, setOrders] = useState<OrderDTO[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string>('');
   const [loading, setLoading] = useState({
     registers: false,
     drinks: false,
@@ -158,7 +176,7 @@ export const CashRegister: React.FC = () => {
 
     } catch (error) {
       console.error('Failed to create order:', error);
-      alert('Failed to process order. Please try again.');
+      setErrorMessage('Failed to process order. Please try again.');
     } finally {
       setLoading(prev => ({ ...prev, checkout: false }));
     }
@@ -198,7 +216,7 @@ export const CashRegister: React.FC = () => {
 
     } catch (error) {
       console.error('Failed to create zero-euro order:', error);
-      alert('Failed to process zero-euro order. Please try again.');
+      setErrorMessage('Failed to process zero-euro order. Please try again.');
     } finally {
       setLoading(prev => ({ ...prev, checkout: false }));
     }
@@ -208,18 +226,18 @@ export const CashRegister: React.FC = () => {
     try {
       if (updatedOrder.id) {
         // Call the API to update the order in the database
-        await updateOrder(updatedOrder.id, updatedOrder);
+        const updatedOrderFromBackend = await updateOrder(updatedOrder.id, updatedOrder);
 
-        // Update the local state
+        // Update the local state with the response from the backend
         setOrders(prev =>
           prev.map(order =>
-            order.id === updatedOrder.id ? updatedOrder : order
+            order.id === updatedOrder.id ? updatedOrderFromBackend : order
           )
         );
       }
     } catch (error) {
       console.error('Failed to update order:', error);
-      alert('Failed to update order. Please try again.');
+      setErrorMessage('Failed to update order. Please try again.');
     }
   };
 
@@ -229,7 +247,7 @@ export const CashRegister: React.FC = () => {
       setOrders(prev => prev.filter(order => order.id !== orderId));
     } catch (error) {
       console.error('Failed to delete order:', error);
-      alert('Failed to delete order. Please try again.');
+      setErrorMessage('Failed to delete order. Please try again.');
     }
   };
 
@@ -290,6 +308,12 @@ export const CashRegister: React.FC = () => {
           onUpdateOrder={handleUpdateOrder}
           onDeleteOrder={handleDeleteOrder}
           loading={loading.orders}
+        />
+
+        {/* Error message component */}
+        <ErrorMessage 
+          message={errorMessage} 
+          onClose={() => setErrorMessage('')} 
         />
       </div>
     </div>

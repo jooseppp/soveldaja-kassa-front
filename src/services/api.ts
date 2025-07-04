@@ -1,4 +1,4 @@
-import { OrderDTO } from '../types';
+import {OrderDTO} from '../types';
 
 const API_BASE_URL = 'http://localhost:8080/api';
 
@@ -90,31 +90,83 @@ export const getLastOrderByRegister = async (registerId: number) => {
   if (!response.ok) throw new Error('Failed to fetch last order');
   const data = await response.json();
   console.log('Last order response:', data);
+
+  // Ensure that zero-euro orders have a total of 0
+  if (data && data.total === 0) {
+    console.log('Zero-euro order detected, ensuring total is 0');
+    return {
+      ...data,
+      total: 0
+    };
+  }
+
   return data;
 };
 
 export const getOrderById = async (id: string) => {
-  const response = await fetch(`${API_BASE_URL}/orders/${id}`);
+  // Get the register ID from localStorage
+  const registerId = localStorage.getItem('selectedRegisterId');
+  if (!registerId) {
+    throw new Error('No register selected');
+  }
+
+  // Include the register ID as a query parameter
+  const response = await fetch(`${API_BASE_URL}/orders/${id}?registerId=${registerId}`);
   if (!response.ok) throw new Error('Failed to fetch order');
   return response.json();
 };
 
 export const deleteOrder = async (id: string) => {
+  // Get the register ID from localStorage
+  const registerId = localStorage.getItem('selectedRegisterId');
+  if (!registerId) {
+    throw new Error('No register selected');
+  }
+
+  // According to API documentation, only id is needed in the path
   const response = await fetch(`${API_BASE_URL}/orders/${id}`, {
     method: 'DELETE',
   });
   if (!response.ok) throw new Error('Failed to delete order');
-  return response.json();
+
+  // Check if the response has content before trying to parse it as JSON
+  const contentType = response.headers.get('content-type');
+  if (contentType && contentType.includes('application/json')) {
+    return response.json();
+  }
+
+  // If there's no JSON content, just return an empty object
+  return {};
 };
 
 export const updateOrder = async (id: string, order: OrderDTO) => {
+  // Get the register ID from localStorage
+  const registerId = localStorage.getItem('selectedRegisterId');
+  if (!registerId) {
+    throw new Error('No register selected');
+  }
+
+  // Include the register ID in the order
+  const orderWithRegisterId = {
+    ...order,
+    registerId: parseInt(registerId)
+  };
+
   const response = await fetch(`${API_BASE_URL}/orders/edit/${id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(order),
+    body: JSON.stringify(orderWithRegisterId),
   });
   if (!response.ok) throw new Error('Failed to update order');
-  return response.json();
+
+  // Check if the response has content before trying to parse it as JSON
+  const contentType = response.headers.get('content-type');
+  if (contentType && contentType.includes('application/json')) {
+    return response.json();
+  }
+
+  // If there's no JSON content, just return an empty object
+  return {};
 };
