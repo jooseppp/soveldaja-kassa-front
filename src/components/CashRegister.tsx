@@ -1,34 +1,36 @@
-import React, { useState, useEffect } from 'react';
-import { Register, DrinkDTO, OrderDTO } from '../types';
-import { useCart } from '../hooks/useCart';
+import React, {useEffect, useState} from 'react';
+import {DrinkDTO, OrderDTO, Register} from '../types';
+import {useCart} from '../hooks/useCart';
 import {
-  getAllRegisters,
-  getDrinksByRegister,
   createOrder,
   deleteOrder,
+  getAllRegisters,
+  getDrinksByRegister,
   getLastOrderByRegister,
   updateOrder
 } from '../services/api';
-import { LoginScreen } from './LoginScreen';
-import { Header } from './Header';
-import { DrinkMenu } from './DrinkMenu';
-import { Cart } from './Cart';
-import { OrderHistory } from './OrderHistory';
+import {LoginScreen} from './LoginScreen';
+import {Header} from './Header';
+import {DrinkMenu} from './DrinkMenu';
+import {Cart} from './Cart';
+import {OrderHistory} from './OrderHistory';
 
 // Error message component
-const ErrorMessage: React.FC<{ message: string; onClose: () => void }> = ({ message, onClose }) => {
+const ErrorMessage: React.FC<{ message: string; onClose: () => void }> = ({message, onClose}) => {
   if (!message) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-md flex items-center justify-between" role="alert">
-      <div>
-        <span className="font-bold">Error: </span>
-        <span className="block sm:inline">{message}</span>
+      <div
+          className="fixed bottom-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-md flex items-center justify-between"
+          role="alert">
+        <div>
+          <span className="font-bold">Error: </span>
+          <span className="block sm:inline">{message}</span>
+        </div>
+        <button onClick={onClose} className="ml-4 text-red-700 hover:text-red-900">
+          <span className="text-2xl">&times;</span>
+        </button>
       </div>
-      <button onClick={onClose} className="ml-4 text-red-700 hover:text-red-900">
-        <span className="text-2xl">&times;</span>
-      </button>
-    </div>
   );
 };
 
@@ -58,7 +60,7 @@ export const CashRegister: React.FC = () => {
   // Load registers on mount and check for saved register
   useEffect(() => {
     const loadRegisters = async () => {
-      setLoading(prev => ({ ...prev, registers: true }));
+      setLoading(prev => ({...prev, registers: true}));
       try {
         const data = await getAllRegisters();
         setRegisters(data);
@@ -74,7 +76,7 @@ export const CashRegister: React.FC = () => {
       } catch (error) {
         console.error('Failed to load registers:', error);
       } finally {
-        setLoading(prev => ({ ...prev, registers: false }));
+        setLoading(prev => ({...prev, registers: false}));
       }
     };
 
@@ -89,7 +91,7 @@ export const CashRegister: React.FC = () => {
     }
 
     const loadDrinks = async () => {
-      setLoading(prev => ({ ...prev, drinks: true }));
+      setLoading(prev => ({...prev, drinks: true}));
       try {
         const data = await getDrinksByRegister(selectedRegister.id);
         setDrinks(data);
@@ -97,7 +99,7 @@ export const CashRegister: React.FC = () => {
         console.error('Failed to load drinks:', error);
         setDrinks([]);
       } finally {
-        setLoading(prev => ({ ...prev, drinks: false }));
+        setLoading(prev => ({...prev, drinks: false}));
       }
     };
 
@@ -112,7 +114,7 @@ export const CashRegister: React.FC = () => {
     }
 
     const loadOrders = async () => {
-      setLoading(prev => ({ ...prev, orders: true }));
+      setLoading(prev => ({...prev, orders: true}));
       try {
         // Use the new endpoint to get the last order for the selected register
         const lastOrder = await getLastOrderByRegister(selectedRegister.id);
@@ -134,7 +136,7 @@ export const CashRegister: React.FC = () => {
         console.error('Failed to load last order:', error);
         setOrders([]);
       } finally {
-        setLoading(prev => ({ ...prev, orders: false }));
+        setLoading(prev => ({...prev, orders: false}));
       }
     };
 
@@ -145,7 +147,7 @@ export const CashRegister: React.FC = () => {
   const handleCheckout = async () => {
     if (cartItems.length === 0) return;
 
-    setLoading(prev => ({ ...prev, checkout: true }));
+    setLoading(prev => ({...prev, checkout: true}));
 
     try {
       const orderData = {
@@ -179,14 +181,14 @@ export const CashRegister: React.FC = () => {
       console.error('Failed to create order:', error);
       setErrorMessage('Failed to process order. Please try again.');
     } finally {
-      setLoading(prev => ({ ...prev, checkout: false }));
+      setLoading(prev => ({...prev, checkout: false}));
     }
   };
 
   const handleZeroCheckout = async () => {
     if (cartItems.length === 0) return;
 
-    setLoading(prev => ({ ...prev, checkout: true }));
+    setLoading(prev => ({...prev, checkout: true}));
 
     try {
       const orderData = {
@@ -220,7 +222,7 @@ export const CashRegister: React.FC = () => {
       console.error('Failed to create zero-euro order:', error);
       setErrorMessage('Failed to process zero-euro order. Please try again.');
     } finally {
-      setLoading(prev => ({ ...prev, checkout: false }));
+      setLoading(prev => ({...prev, checkout: false}));
     }
   };
 
@@ -232,9 +234,9 @@ export const CashRegister: React.FC = () => {
 
         // Update the local state
         setOrders(prev =>
-          prev.map(order =>
-            order.id === updatedOrder.id ? updatedOrder : order
-          )
+            prev.map(order =>
+                order.id === updatedOrder.id ? updatedOrder : order
+            )
         );
       }
     } catch (error) {
@@ -265,59 +267,59 @@ export const CashRegister: React.FC = () => {
   // Show login screen if no register is selected
   if (!selectedRegister) {
     return (
-      <LoginScreen
-        registers={registers}
-        onSelectRegister={setSelectedRegister}
-        loading={loading.registers}
-      />
+        <LoginScreen
+            registers={registers}
+            onSelectRegister={setSelectedRegister}
+            loading={loading.registers}
+        />
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-8">
-        <Header
-          selectedRegister={selectedRegister}
-          onLogout={handleLogout}
-        />
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-8">
+          <Header
+              selectedRegister={selectedRegister}
+              onLogout={handleLogout}
+          />
 
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-8">
-          <div className="xl:col-span-2">
-            <DrinkMenu
-              drinks={drinks}
-              onAddToCart={addToCart}
-              loading={loading.drinks}
-            />
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-8">
+            <div className="xl:col-span-2">
+              <DrinkMenu
+                  drinks={drinks}
+                  onAddToCart={addToCart}
+                  loading={loading.drinks}
+              />
+            </div>
+
+            <div className="xl:col-span-1">
+              <Cart
+                  cartItems={cartItems}
+                  onUpdateQuantity={updateQuantity}
+                  onRemoveItem={removeFromCart}
+                  onClearCart={clearCart}
+                  onCheckout={handleCheckout}
+                  onZeroCheckout={handleZeroCheckout}
+                  totalPrice={getTotalPrice()}
+                  totalItems={getTotalItems()}
+                  loading={loading.checkout}
+              />
+            </div>
           </div>
 
-          <div className="xl:col-span-1">
-            <Cart
-              cartItems={cartItems}
-              onUpdateQuantity={updateQuantity}
-              onRemoveItem={removeFromCart}
-              onClearCart={clearCart}
-              onCheckout={handleCheckout}
-              onZeroCheckout={handleZeroCheckout}
-              totalPrice={getTotalPrice()}
-              totalItems={getTotalItems()}
-              loading={loading.checkout}
-            />
-          </div>
+          <OrderHistory
+              orders={orders}
+              onUpdateOrder={handleUpdateOrder}
+              onDeleteOrder={handleDeleteOrder}
+              loading={loading.orders}
+          />
+
+          {/* Error message component */}
+          <ErrorMessage
+              message={errorMessage}
+              onClose={() => setErrorMessage('')}
+          />
         </div>
-
-        <OrderHistory
-          orders={orders}
-          onUpdateOrder={handleUpdateOrder}
-          onDeleteOrder={handleDeleteOrder}
-          loading={loading.orders}
-        />
-
-        {/* Error message component */}
-        <ErrorMessage 
-          message={errorMessage} 
-          onClose={() => setErrorMessage('')} 
-        />
       </div>
-    </div>
   );
 };
