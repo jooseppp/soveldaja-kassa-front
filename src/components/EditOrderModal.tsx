@@ -83,20 +83,17 @@ export const EditOrderModal: React.FC<EditOrderModalProps> = ({
   };
 
   const handleSave = () => {
-    // Don't set the total in the updatedOrder, let the backend calculate it
-    // We still display the calculated total in the UI for user feedback
     const updatedOrder: OrderDTO = {
       ...order,
       items: editedItems,
-      // Keep the original total from the backend as the source of truth
-      // The backend will recalculate the total based on the updated items
+      total: calculateTotal(),
     };
     onSave(updatedOrder);
   };
 
 
   const handleDelete = () => {
-    if (order.id) {
+    if (order.id && window.confirm('Are you sure you want to delete this order?')) {
       onDelete(order.id);
     }
   };

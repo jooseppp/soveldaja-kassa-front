@@ -1,4 +1,4 @@
-import {OrderDTO} from '../types';
+import { OrderDTO } from '../types';
 
 const API_BASE_URL = 'http://localhost:8080/api';
 
@@ -43,18 +43,24 @@ export const assignDrinkToRegister = async (drinkId: number, registerId: number)
 };
 
 // Order API
-export const createOrder = async (order: { items: { drinkId: string; quantity: number }[]; total: number }) => {
+export const createOrder = async (order: { items: { drinkId: string; quantity: number }[]; total: number; isZeroOrder?: boolean }) => {
   // Get the register ID from localStorage
   const registerId = localStorage.getItem('selectedRegisterId');
   if (!registerId) {
     throw new Error('No register selected');
   }
 
-  // Include the register ID in the order
+  // Include the register ID in the order and map isZeroOrder to zeroOrder for backend compatibility
   const orderWithRegisterId = {
     ...order,
-    registerId: parseInt(registerId)
+    registerId: parseInt(registerId),
+    zeroOrder: order.isZeroOrder // Map isZeroOrder to zeroOrder for backend
   };
+
+  // Remove isZeroOrder as it's not expected by the backend
+  if ('isZeroOrder' in orderWithRegisterId) {
+    delete orderWithRegisterId.isZeroOrder;
+  }
 
   const response = await fetch(`${API_BASE_URL}/orders`, {
     method: 'POST',
@@ -90,83 +96,40 @@ export const getLastOrderByRegister = async (registerId: number) => {
   if (!response.ok) throw new Error('Failed to fetch last order');
   const data = await response.json();
   console.log('Last order response:', data);
-
-  // Ensure that zero-euro orders have a total of 0
-  if (data && data.total === 0) {
-    console.log('Zero-euro order detected, ensuring total is 0');
-    return {
-      ...data,
-      total: 0
-    };
-  }
-
   return data;
 };
 
 export const getOrderById = async (id: string) => {
-  // Get the register ID from localStorage
-  const registerId = localStorage.getItem('selectedRegisterId');
-  if (!registerId) {
-    throw new Error('No register selected');
-  }
-
-  // Include the register ID as a query parameter
-  const response = await fetch(`${API_BASE_URL}/orders/${id}?registerId=${registerId}`);
+  const response = await fetch(`${API_BASE_URL}/orders/${id}`);
   if (!response.ok) throw new Error('Failed to fetch order');
   return response.json();
 };
 
 export const deleteOrder = async (id: string) => {
-  // Get the register ID from localStorage
-  const registerId = localStorage.getItem('selectedRegisterId');
-  if (!registerId) {
-    throw new Error('No register selected');
-  }
-
-  // According to API documentation, only id is needed in the path
   const response = await fetch(`${API_BASE_URL}/orders/${id}`, {
     method: 'DELETE',
   });
   if (!response.ok) throw new Error('Failed to delete order');
-
-  // Check if the response has content before trying to parse it as JSON
-  const contentType = response.headers.get('content-type');
-  if (contentType && contentType.includes('application/json')) {
-    return response.json();
-  }
-
-  // If there's no JSON content, just return an empty object
-  return {};
+  return response.json();
 };
 
 export const updateOrder = async (id: string, order: OrderDTO) => {
-  // Get the register ID from localStorage
-  const registerId = localStorage.getItem('selectedRegisterId');
-  if (!registerId) {
-    throw new Error('No register selected');
-  }
+  // Create a copy of the order to avoid modifying the original
+  const orderForBackend = { ...order };
 
-  // Include the register ID in the order
-  const orderWithRegisterId = {
-    ...order,
-    registerId: parseInt(registerId)
-  };
+  // Map isZeroOrder to zeroOrder for backend compatibility
+  if ('isZeroOrder' in orderForBackend) {
+    orderForBackend.zeroOrder = orderForBackend.isZeroOrder;
+    delete orderForBackend.isZeroOrder;
+  }
 
   const response = await fetch(`${API_BASE_URL}/orders/edit/${id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(orderWithRegisterId),
+    body: JSON.stringify(orderForBackend),
   });
   if (!response.ok) throw new Error('Failed to update order');
-
-  // Check if the response has content before trying to parse it as JSON
-  const contentType = response.headers.get('content-type');
-  if (contentType && contentType.includes('application/json')) {
-    return response.json();
-  }
-
-  // If there's no JSON content, just return an empty object
-  return {};
+  return response.json();
 };

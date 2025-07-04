@@ -154,6 +154,7 @@ export const CashRegister: React.FC = () => {
           quantity: item.quantity,
         })),
         total: getTotalPrice(),
+        isZeroOrder: false, // Explicitly set isZeroOrder to false for regular checkout
       };
 
       await createOrder(orderData);
@@ -193,7 +194,8 @@ export const CashRegister: React.FC = () => {
           drinkId: item.drink.id.toString(),
           quantity: item.quantity,
         })),
-        total: 0, // Set total to 0 for zero-euro orders
+        total: getTotalPrice(),
+        isZeroOrder: true, // Set isZeroOrder flag to true instead of setting total to 0
       };
 
       await createOrder(orderData);
@@ -226,12 +228,12 @@ export const CashRegister: React.FC = () => {
     try {
       if (updatedOrder.id) {
         // Call the API to update the order in the database
-        const updatedOrderFromBackend = await updateOrder(updatedOrder.id, updatedOrder);
+        await updateOrder(updatedOrder.id, updatedOrder);
 
-        // Update the local state with the response from the backend
+        // Update the local state
         setOrders(prev =>
           prev.map(order =>
-            order.id === updatedOrder.id ? updatedOrderFromBackend : order
+            order.id === updatedOrder.id ? updatedOrder : order
           )
         );
       }

@@ -26,6 +26,8 @@ export interface OrderDTO {
   total: number;
   createdAt: string;
   registerId: string;
+  isZeroOrder?: boolean; // Used in frontend
+  zeroOrder?: boolean;   // Used in backend
 }
 
 export interface CartItem {
